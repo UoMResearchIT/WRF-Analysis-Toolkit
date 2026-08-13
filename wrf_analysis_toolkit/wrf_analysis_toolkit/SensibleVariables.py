@@ -1487,38 +1487,37 @@ SkewT_Gibraltar = svariable(
 # mu_min_frac = 0.55 + min(0, (pv_range_min / (pv_range_max - pv_range_min)))
 # mu_nticks = 11
 # mu_nlevs = 11
-MassTendency2 = svariable(
-    dim=3,
-    wrfname="MU_TEND2",
-    ptitle=f"Mass tendency [Pa/s]",
-    outfile=f"MassTendency",
+UHorizAdvMomentum = svariable(
+    dim=4,
+    wrfname="RU_TEND_HADV",
+    ptitle=f"Horizontal advection of zonal coupled momentum term in X [Pa m s-2]",
+    outfile=f"UHorizAdvMomentum",
     colormap=get_cmap("YlGnBu"),
 )
 
+def create_UHorizAdvMomentum_at(
+    interpvalue,
+    # range_min=mu_range_min,
+    # range_max=mu_range_max,
+    # nticks=mu_nticks,
+    # nlevs=mu_nlevs
+):
+    return svariable(
+        dim=4,
+        wrfname="RU_TEND_HADV",
+        ptitle=f"Horizontal advection of zonal coupled momentum term in X at {interpvalue} hPa [Pa m s-2]",
+        outfile=f"UHorizAdvMomentum{interpvalue}",
+        interpvar="pressure",
+        interpvalue=interpvalue,
+        # colormap=cmr.get_sub_cmap("PuOr", min_frac, max_frac, N=nlevs),
+        # nticks=nticks,
+        # nlevs=nlevs,
+        # range_min=range_min,
+        # range_max=range_max,
+    )
 
-# def create_MassTendency_at(
-#     interpvalue,
-#     # range_min=mu_range_min,
-#     # range_max=mu_range_max,
-#     # nticks=mu_nticks,
-#     # nlevs=mu_nlevs
-# ):
-#     return svariable(
-#         dim=4,
-#         wrfname="MU_TEND2",
-#         ptitle=f"Mass tendency at {interpvalue} hPa [PVU]",
-#         outfile=f"MassTendency{interpvalue}",
-#         interpvar="pressure",
-#         interpvalue=interpvalue,
-#         # colormap=cmr.get_sub_cmap("PuOr", min_frac, max_frac, N=nlevs),
-#         # nticks=nticks,
-#         # nlevs=nlevs,
-#         # range_min=range_min,
-#         # range_max=range_max,
-#     )
-
-# MassTendency925 = create_MassTendency_at(925) #, range_min=-5, range_max=5)
-# MassTendency850 = create_MassTendency_at(850) #, range_min=-5, range_max=5)
-# MassTendency700 = create_MassTendency_at(700) #, range_min=-5, range_max=5)
-# MassTendency500 = create_MassTendency_at(500) #, range_min=-5, range_max=5)
-# MassTendency300 = create_MassTendency_at(300) #, range_min=-10, range_max=10)
+UMassTendency925 = create_UHorizAdvMomentum_at(925) #, range_min=-5, range_max=5)
+UMassTendency850 = create_UHorizAdvMomentum_at(850) #, range_min=-5, range_max=5)
+UMassTendency700 = create_UHorizAdvMomentum_at(700) #, range_min=-5, range_max=5)
+UMassTendency500 = create_UHorizAdvMomentum_at(500) #, range_min=-5, range_max=5)
+UMassTendency300 = create_UHorizAdvMomentum_at(300) #, range_min=-10, range_max=10)
