@@ -43,6 +43,7 @@ def GetSensVar(ncfile, svariable, windbarbs=0, time=0, varprevv=None):
             d4var.values = F3D
 
         # Destagger the variable if it is staggered
+        print(str(d4var.Time.values)[0:19])
         stagger_dim = None
         for i, dim in enumerate(d4var.dims):
             if dim.endswith("_stag"):
