@@ -45,6 +45,7 @@ def GetSensVar(ncfile, svariable, windbarbs=0, time=0, varprevv=None):
         # Destagger the variable if it is staggered
         print(str(d4var.dims))
         print(str(d4var.Time.values)[0:19])
+        print(str(d4var.coords))
         stagger_dim = None
         for i, dim in enumerate(d4var.dims):
             if dim.endswith("_stag"):
@@ -53,12 +54,14 @@ def GetSensVar(ncfile, svariable, windbarbs=0, time=0, varprevv=None):
                 break
         if stagger_dim:
             try:
-                vartime = d4var.Time
                 d4var = destagger(d4var, stagger_dim, meta=True)
-                d4var['Time'] = vartime  # Need to redfine time as lost in destagger step
+                # Coordinates are lost during restaggering, so set based in interp field
+                d4var.assign_coords = interpvar.coords
             except:
                 raise ValueError(f"Unable to destagger {svariable.outfile}")
+        print(str(d4var.dims))
         print(str(d4var.Time.values)[0:19])
+        print(str(d4var.coords))
 
         # interpolate variable
         var = interplevel(d4var, interpvar, svariable.interpvalue)
