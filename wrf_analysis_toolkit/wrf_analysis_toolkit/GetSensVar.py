@@ -47,11 +47,11 @@ def GetSensVar(ncfile, svariable, windbarbs=0, time=0, varprevv=None):
         for i, dim in enumerate(d4var.dims):
             if dim.endswith("_stag"):
                 stagger_dim = i
-                print(f"Destaggering {svariable.outfile} along {i}")
+                print(f"Destaggering {svariable.outfile} along dim {i}")
                 break
         if stagger_dim:
             try:
-                d4var = destagger(d4var, stagger_dim)
+                d4var = destagger(d4var, stagger_dim, meta=True)
             except:
                 raise ValueError(f"Unable to destagger {svariable.outfile}")
 
