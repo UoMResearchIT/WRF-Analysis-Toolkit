@@ -1,4 +1,4 @@
-from wrf import to_np, getvar, g_geoht, interplevel
+from wrf import to_np, getvar, g_geoht, interplevel, destagger
 import numpy as np
 
 import wrf_analysis_toolkit.SensibleVariables as sv
@@ -41,6 +41,21 @@ def GetSensVar(ncfile, svariable, windbarbs=0, time=0, varprevv=None):
             F3D = Frontogenesis.frontogenesis3D(ncfile, time)
             d4var = getvar(ncfile, svariable.interpvar, timeidx=time)
             d4var.values = F3D
+
+        # Destagger the variable if it is staggered
+        stagger_dim = None
+        for i, dim in enumerate(d4var.dims):
+            if dim.endswith("_stag"):
+                stagger_dim = i
+                print(f"Destaggering {svariable.outfile} along {i}")
+                break
+        if stagger_dim:
+            try:
+                d4var = destagger(d4var, stagger_dim)
+            except:
+                raise ValueError(f"Unable to destagger {svariable.outfile}")
+
+        # interpolate variable
         var = interplevel(d4var, interpvar, svariable.interpvalue)
         # Special variable computation
         if "AirTempDif6h" in svariable.outfile:
