@@ -56,7 +56,7 @@ def GetSensVar(ncfile, svariable, windbarbs=0, time=0, varprevv=None):
             try:
                 d4var = destagger(d4var, stagger_dim, meta=True)
                 # Coordinates are lost during restaggering, so set based in interp field
-                d4var.assign_coords = interpvar.coords
+                d4var.assign_coords(interpvar.coords)
             except:
                 raise ValueError(f"Unable to destagger {svariable.outfile}")
         print(str(d4var.dims))
