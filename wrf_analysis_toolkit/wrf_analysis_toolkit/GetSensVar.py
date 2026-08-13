@@ -55,7 +55,7 @@ def GetSensVar(ncfile, svariable, windbarbs=0, time=0, varprevv=None):
             try:
                 vartime = d4var.Time
                 d4var = destagger(d4var, stagger_dim, meta=True)
-                d4var.Time = vartime  # Need to redfine time as lost in destagger step
+                d4var['Time'] = vartime  # Need to redfine time as lost in destagger step
             except:
                 raise ValueError(f"Unable to destagger {svariable.outfile}")
         print(str(d4var.Time.values)[0:19])
