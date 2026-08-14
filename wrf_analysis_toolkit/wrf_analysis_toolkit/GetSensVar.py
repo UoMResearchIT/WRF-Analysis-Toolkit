@@ -32,6 +32,7 @@ def GetSensVar(ncfile, svariable, windbarbs=0, time=0, varprevv=None):
     # For 3D +value variables, interpolated at interpvalue of interpvar
     elif svariable.dim == 4:
         interpvar = getvar(ncfile, svariable.interpvar, timeidx=time)
+        print(str(interpvar.coords))
         if svariable.wrfname is not None:
             d4var = getvar(ncfile, svariable.wrfname, timeidx=time)
         # Special variable acquisition
