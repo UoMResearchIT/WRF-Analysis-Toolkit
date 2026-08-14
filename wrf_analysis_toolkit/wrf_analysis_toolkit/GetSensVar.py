@@ -57,8 +57,8 @@ def GetSensVar(ncfile, svariable, windbarbs=0, time=0, varprevv=None):
                 # Manually assign coordinates from interpvar because these aren't done automatically
                 d4var.assign_coords(coords=interpvar.coords)
                 d4var.assign_coords({
-                    'XLONG', (('south_north', 'west_east'), interpvar.coords['XLONG'].values),
-                    'XLAT', (('south_north', 'west_east'), interpvar.coords['XLAT'].values)
+                    'XLONG': (('south_north', 'west_east'), interpvar.coords['XLONG'].values),
+                    'XLAT': (('south_north', 'west_east'), interpvar.coords['XLAT'].values)
                 })
                 d4var["Time"] = interpvar.Time
             except:
