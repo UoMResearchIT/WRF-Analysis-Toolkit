@@ -32,8 +32,6 @@ def GetSensVar(ncfile, svariable, windbarbs=0, time=0, varprevv=None):
     # For 3D +value variables, interpolated at interpvalue of interpvar
     elif svariable.dim == 4:
         interpvar = getvar(ncfile, svariable.interpvar, timeidx=time)
-        print("Pressure coords:")
-        print(dict(interpvar.coords))
         if svariable.wrfname is not None:
             d4var = getvar(ncfile, svariable.wrfname, timeidx=time)
         # Special variable acquisition
@@ -56,9 +54,12 @@ def GetSensVar(ncfile, svariable, windbarbs=0, time=0, varprevv=None):
         if stagger_dim:
             try:
                 d4var = destagger(d4var, stagger_dim, meta=True)
-                # Coordinates are lost during restaggering, so set based in interp field
-                d4var
-                d4var.assign_coords(coords=dict(interpvar.coords))
+                # Manually assign coordinates from interpvar because these aren't done automatically
+                d4var.assign_coords(coords=interpvar.coords)
+                d4var.assign_coords({
+                    'XLONG', (('south_north', 'west_east'), interpvar.coords['XLONG'].values),
+                    'XLAT', (('south_north', 'west_east'), interpvar.coords['XLAT'].values)
+                })
                 d4var["Time"] = interpvar.Time
             except:
                 raise ValueError(f"Unable to destagger {svariable.outfile}")
