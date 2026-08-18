@@ -94,6 +94,12 @@ def cli():
         help="Show lat/lon labels on the top and left and projected coordinate labels on the bottom and right.",
     )
     parser.add_argument(
+        "--us_states",
+        type=str2bool,
+        default=0,
+        help="Show US state boundaries on plot.",
+    )
+    parser.add_argument(
         "--rows",
         type=int,
         default=1,
@@ -225,13 +231,13 @@ def cli():
         "--start_latlon",
         type=latlon,
         default=None,
-        help="Start latlon coordinate for making vertical cross section.",
+        help="Start latlon coordinate for making vertical cross section, or start point to draw a line on a 2D map plot."
     )
     parser.add_argument(
         "--end_latlon",
         type=latlon,
         default=None,
-        help="End latlon coordinate for making vertical cross section.",
+        help="End latlon coordinate for making vertical cross section, or end point to draw a line on a 2D map plot.",
     )
     parser.add_argument(
         "--plim_bottom",
@@ -301,6 +307,7 @@ def cli():
                 trajectory=args.traj,
                 region=args.region,
                 region_ticks=args.region_ticks,
+                us_states=args.us_states,
                 vcross=args.vcross,
                 start_latlon=args.start_latlon,
                 end_latlon=args.end_latlon,

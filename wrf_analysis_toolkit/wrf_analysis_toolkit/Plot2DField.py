@@ -9,6 +9,7 @@ from wrf import to_np, smooth2d, get_cartopy, cartopy_xlim, cartopy_ylim, latlon
 
 _pkg_data_dir = Path(__file__).resolve().parent / "cartopy_data"
 if _pkg_data_dir.exists():
+    print(_pkg_data_dir)
     cartopy.config["data_dir"] = str(_pkg_data_dir)
 
 import wrf_analysis_toolkit.SensibleVariables as sv
@@ -28,6 +29,7 @@ def Plot2DField(
     smooth=1,
     region="full",
     region_ticks=False,
+    us_states=False,
     nlevs=10,
     time_tag=1,
     return_fig=0,
@@ -68,6 +70,11 @@ def Plot2DField(
     borders = cartopy.feature.BORDERS.with_scale("50m")
     ax.add_feature(borders, linewidth=0.4, edgecolor="black")
     ax.coastlines("50m", linewidth=0.8)
+
+    # Add U.S. state borders
+    if us_states:
+        states_feature = cartopy.feature.STATES.with_scale("50m")
+        ax.add_feature(states_feature, linestyle=':', linewidth=0.3, edgecolor='black')
 
     # Filled contours
     z = to_np(smooth_var)
@@ -113,6 +120,7 @@ def Plot2DField(
         cmap=svariable.colormap,
         alpha=0.8,
         extend="both",
+        zorder=1,
     )
     if svariable.contour_color is not None:
         contour_lines = plt.contour(
@@ -124,6 +132,7 @@ def Plot2DField(
             linewidths=0.4,
             transform=cartopy.crs.PlateCarree(),
             extend="both",
+            zorder=2,
         )
         if svariable.contour_c_labels:
             plt.clabel(contour_lines, inline=True, fontsize=8, levels=ticklevs)
@@ -211,6 +220,22 @@ def Plot2DField(
                 f"Invalid region specification: {region}."
                 " Expected 'full' or 'min_x,max_x,min_y,max_y'"
             )
+
+    if svariable.start_latlon and svariable.end_latlon:
+        se_lons = np.array([svariable.start_latlon[1], svariable.end_latlon[1]])
+        se_lats = np.array([svariable.start_latlon[0], svariable.end_latlon[0]])
+        print(f"Drawing line between {svariable.start_latlon} and {svariable.end_latlon}")
+        xy_pts = cart_proj.transform_points(
+            cartopy.crs.PlateCarree(),
+            se_lons,
+            se_lats,
+        )
+        plt.plot(
+            xy_pts[:, 0],
+            xy_pts[:, 1],
+            color='black', linestyle='-', linewidth=2,
+            zorder=3,
+        )
 
     # Add the gridlines
     add_lat_lon_ticks(ax, region_ticks)

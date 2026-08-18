@@ -2,7 +2,7 @@ from netCDF4 import Dataset
 import imageio
 import os
 
-from wrf_analysis_toolkit.utils import select_wrfout_files
+from wrf_analysis_toolkit.utils import select_wrfout_files, latlon_check
 from wrf_analysis_toolkit.Plot2DField import *
 from wrf_analysis_toolkit.SkewT import *
 from wrf_analysis_toolkit.GetSensVar import *
@@ -22,6 +22,7 @@ def Animate(
     smooth=1,
     region="full",
     region_ticks=False,
+    us_states=False,
     cleanpng=1,
     save_pdf=0,
     make_mp4=True
@@ -107,6 +108,11 @@ def Animate(
         print("Loading ", wrf_fn)
         ncfile = Dataset(dir_path + wrf_fn)
 
+        # If using start/end_latlon, confirm both are in the domain
+        if svariable.start_latlon and svariable.end_latlon:
+            latlon_check(ncfile, svariable.start_latlon)
+            latlon_check(ncfile, svariable.end_latlon)
+
         # Get number of time frames and plot them
         timerange = ncfile.variables["Times"].shape[0]
         for ti in range(timerange):
@@ -166,6 +172,7 @@ def Animate(
                         smooth,
                         region=region,
                         region_ticks=region_ticks,
+                        us_states=us_states,
                         save_pdf=save_pdf,
                     )
                     PNGfiles.append(outfname)

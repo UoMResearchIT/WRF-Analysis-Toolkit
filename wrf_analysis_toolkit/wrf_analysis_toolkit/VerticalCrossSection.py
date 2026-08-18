@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 from matplotlib.pyplot import get_cmap
 from matplotlib.ticker import ScalarFormatter
 
-from wrf import to_np, getvar, CoordPair, vertcross, ll_to_xy
+from wrf import to_np, getvar, CoordPair, vertcross
 
 from wrf_analysis_toolkit.utils import set_variable
 from wrf_analysis_toolkit.GetSensVar import *
@@ -19,15 +19,13 @@ def VerticalCrossSection(
     dpi=100,
     save_pdf=0,
 ):
-    # Confirm valid start/end lat-lon points are inside the domain
+    # Confirm valid start/end lat-lon points
     start_latlon = svariable.start_latlon
     end_latlon = svariable.end_latlon
     if start_latlon is None or end_latlon is None:
-        raise ValueError("start_latlon and end_latlon must be defined to make a vertical cross-section")
+        raise ValueError("start_latlon and end_latlon must both be defined to make a vertical cross-section")
     start_point = CoordPair(lat=start_latlon[0], lon=start_latlon[1])
     end_point = CoordPair(lat=end_latlon[0], lon=end_latlon[1])
-    latlon_check(ncfile, start_point)
-    latlon_check(ncfile, end_point)
 
     levs = np.linspace(svariable.range_min, svariable.range_max, svariable.nlevs)
     ticklevs = np.linspace(svariable.range_min, svariable.range_max, svariable.nlevs)
@@ -127,13 +125,3 @@ def VerticalCrossSection(
             plt.savefig(outfname.replace(".png", ".pdf"))
         plt.close(fig)
 
-
-def latlon_check(ncfile: Dataset, coord_pair: CoordPair):
-    lat = coord_pair.lat
-    lon = coord_pair.lon
-    try:
-        x_y = ll_to_xy(ncfile, lat, lon)
-    except ValueError as err:
-        raise ValueError(
-            f"Point ({lat}, {lon}) is outside the WRF domain"
-        ) from err
