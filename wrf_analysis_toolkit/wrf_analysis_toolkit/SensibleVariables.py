@@ -977,7 +977,6 @@ InstRain = svariable(
     range_max=128,
 )
 
-# Frontgenesis
 Frontogenesis925 = svariable(
     dim=4,
     ptitle="Petterssen Frontogenesis at 925 hPa [K/(100km 3h)]",
@@ -1225,6 +1224,29 @@ WindSpeed850 = create_WindSpeed_at(850)
 WindSpeed700 = create_WindSpeed_at(700)
 WindSpeed500 = create_WindSpeed_at(500)
 WindSpeed300 = create_WindSpeed_at(300, range_min=0, range_max=80)
+
+def create_U_at(interpvalue, range_min=0, range_max=60, nticks=12, nlevs=12):
+    return svariable(
+        dim=4,
+        wrfname="U",
+        ptitle=f"Wind Speed in West-East direction at {interpvalue} hPa [m/s]",
+        outfile=f"U{interpvalue}",
+        interpvar="pressure",
+        interpvalue=interpvalue,
+        colormap=get_cmap("YlGnBu"),
+        nticks=nticks,
+        nlevs=nlevs,
+        range_min=range_min,
+        range_max=range_max,
+        windbarbs=True,
+    )
+
+U925 = create_U_at(925)
+U850 = create_U_at(850)
+U700 = create_U_at(700)
+U500 = create_U_at(500)
+U300 = create_U_at(300, range_min=0, range_max=80)
+
 
 # Potential Vorticity
 pv_range_min = -10
@@ -1481,12 +1503,12 @@ SkewT_Gibraltar = svariable(
 # Sensible variables for analysing momentum tendency terms
 
 # Mass Tendency 2D
-# mu_range_min = -10
-# mu_range_max = 10
-# mu_max_frac = 0.55 + min(0.45, (pv_range_max / (pv_range_max - pv_range_min)))
-# mu_min_frac = 0.55 + min(0, (pv_range_min / (pv_range_max - pv_range_min)))
-# mu_nticks = 11
-# mu_nlevs = 11
+mu_range_min = -100
+mu_range_max = 100
+mu_max_frac = 0.55 + min(0.45, (pv_range_max / (pv_range_max - pv_range_min)))
+mu_min_frac = 0.55 + min(0, (pv_range_min / (pv_range_max - pv_range_min)))
+mu_nticks = 21
+mu_nlevs = 21
 UHorizAdvMomentum = svariable(
     dim=4,
     wrfname="RU_TEND_HADV",
@@ -1497,11 +1519,13 @@ UHorizAdvMomentum = svariable(
 
 def create_UHorizAdvMomentum_at(
     interpvalue,
-    # range_min=mu_range_min,
-    # range_max=mu_range_max,
-    # nticks=mu_nticks,
-    # nlevs=mu_nlevs
+    range_min=mu_range_min,
+    range_max=mu_range_max,
+    nticks=mu_nticks,
+    nlevs=mu_nlevs
 ):
+    min_frac = 0.55 + min(0, (range_min / (range_max - range_min)))
+    max_frac = 0.55 + min(0.45, (range_max / (range_max - range_min)))
     return svariable(
         dim=4,
         wrfname="RU_TEND_HADV",
@@ -1509,11 +1533,11 @@ def create_UHorizAdvMomentum_at(
         outfile=f"UHorizAdvMomentum{interpvalue}",
         interpvar="pressure",
         interpvalue=interpvalue,
-        # colormap=cmr.get_sub_cmap("PuOr", min_frac, max_frac, N=nlevs),
-        # nticks=nticks,
-        # nlevs=nlevs,
-        # range_min=range_min,
-        # range_max=range_max,
+        colormap=cmr.get_sub_cmap("PuOr", min_frac, max_frac, N=nlevs),
+        nticks=nticks,
+        nlevs=nlevs,
+        range_min=range_min,
+        range_max=range_max,
     )
 
 UMassTendency925 = create_UHorizAdvMomentum_at(925) #, range_min=-5, range_max=5)
@@ -1521,3 +1545,25 @@ UMassTendency850 = create_UHorizAdvMomentum_at(850) #, range_min=-5, range_max=5
 UMassTendency700 = create_UHorizAdvMomentum_at(700) #, range_min=-5, range_max=5)
 UMassTendency500 = create_UHorizAdvMomentum_at(500) #, range_min=-5, range_max=5)
 UMassTendency300 = create_UHorizAdvMomentum_at(300) #, range_min=-10, range_max=10)
+
+# QVapor
+def create_QVapor_at(interpvalue, range_min=0, range_max=0.01, nticks=11, nlevs=11):
+    return svariable(
+        dim=4,
+        wrfname="QVAPOR",
+        ptitle=f"Water Vapour Mixing Ratio at {interpvalue} hPa [kg kg-1]",
+        outfile=f"QVapor{interpvalue}",
+        interpvar="pressure",
+        interpvalue=interpvalue,
+        colormap=get_cmap("YlGnBu"),
+        nticks=nticks,
+        nlevs=nlevs,
+        range_min=range_min,
+        range_max=range_max,
+        windbarbs=True,
+    )
+QVapor925 = create_QVapor_at(925)
+QVapor850 = create_QVapor_at(850)
+QVapor700 = create_QVapor_at(700)
+QVapor500 = create_QVapor_at(500)
+QVapor300 = create_QVapor_at(300)

@@ -43,8 +43,6 @@ def GetSensVar(ncfile, svariable, windbarbs=0, time=0, varprevv=None):
             d4var.values = F3D
 
         # Destagger the variable if it is staggered
-        print("d4var cords coords before:")
-        print(str(d4var.coords))
         stagger_dim = None
         for i, dim in enumerate(d4var.dims):
             if dim.endswith("_stag"):
@@ -55,16 +53,11 @@ def GetSensVar(ncfile, svariable, windbarbs=0, time=0, varprevv=None):
             try:
                 d4var = destagger(d4var, stagger_dim, meta=True)
                 # Manually assign coordinates from interpvar because these aren't done automatically
-                d4var.assign_coords(coords=interpvar.coords)
-                d4var.assign_coords({
-                    'XLONG': (('south_north', 'west_east'), interpvar.coords['XLONG'].values),
-                    'XLAT': (('south_north', 'west_east'), interpvar.coords['XLAT'].values)
-                })
+                d4var = d4var.assign_coords(coords=interpvar.coords)
+                d4var.attrs.update(stagger=interpvar.attrs['stagger'], coordinates=interpvar.attrs['coordinates'])
                 d4var["Time"] = interpvar.Time
             except:
                 raise ValueError(f"Unable to destagger {svariable.outfile}")
-        print("d4var cords coords after:")
-        print(str(d4var.coords))
 
         # interpolate variable
         var = interplevel(d4var, interpvar, svariable.interpvalue)
