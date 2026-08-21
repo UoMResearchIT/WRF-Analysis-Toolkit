@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2026 University of Manchester
+#
+# SPDX-License-Identifier: apache-2.0
+
 from netCDF4 import Dataset
 import imageio
 import os
@@ -151,6 +155,7 @@ def Animate(
                     svariable,
                     outfname=outfname,
                     save_pdf=save_pdf,
+                    time=ti,
                 )
                 PNGfiles.append(outfname)
 

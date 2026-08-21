@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2026 University of Manchester
+
+SPDX-License-Identifier: apache-2.0
+-->
+
 # WRF Analysis Toolkit
 
 This repo contains a set of scripts to generate diagnostics from WRF outputs, and to compare them with other WRF outputs.

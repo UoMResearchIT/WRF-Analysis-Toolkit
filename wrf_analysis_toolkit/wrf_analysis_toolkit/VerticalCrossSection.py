@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2026 University of Manchester
+#
+# SPDX-License-Identifier: apache-2.0
+
 from netCDF4 import Dataset
 
 import matplotlib.pyplot as plt
@@ -9,12 +13,14 @@ from wrf import to_np, getvar, CoordPair, vertcross
 from wrf_analysis_toolkit.utils import set_variable
 from wrf_analysis_toolkit.GetSensVar import *
 import wrf_analysis_toolkit.SensibleVariables as sv
+import wrf_analysis_toolkit.Frontogenesis as Frontogenesis
 
 def VerticalCrossSection(
     ncfile: Dataset,
     svariable: sv.svariable,
     outfname="VCrossSec.png",
     time_tag=1,
+    time=0,
     return_fig=0,
     dpi=100,
     save_pdf=0,
@@ -31,7 +37,12 @@ def VerticalCrossSection(
     ticklevs = np.linspace(svariable.range_min, svariable.range_max, svariable.nlevs)
 
     # Extract variable along pressure coordinates
-    var =  getvar(ncfile, svariable.wrfname)
+    if "Frontogenesis" in svariable.outfile:
+        F3D = Frontogenesis.frontogenesis3D(ncfile, time=time)
+        var = getvar(ncfile, svariable.interpvar, timeidx=time)
+        var.values = F3D
+    else:
+        var =  getvar(ncfile, svariable.wrfname)
     dtime = str(var.Time.values)[0:19]
     p = getvar(ncfile, "pressure")
     var_cross = vertcross(

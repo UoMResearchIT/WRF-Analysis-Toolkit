@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2026 University of Manchester
+#
+# SPDX-License-Identifier: apache-2.0
+
 import os
 from wrf import ll_to_xy, to_np, latlon_coords, getvar
 import cartopy.crs as crs

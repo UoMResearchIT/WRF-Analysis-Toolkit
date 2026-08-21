@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2026 University of Manchester
+#
+# SPDX-License-Identifier: apache-2.0
+
 FROM mambaorg/micromamba:1.5.8
 
 COPY environment.yml /tmp/environment.yml

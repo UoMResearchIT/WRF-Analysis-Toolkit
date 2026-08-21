@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2026 University of Manchester
+#4
+# SPDX-License-Identifier: apache-2.0
+
 from matplotlib.pyplot import get_cmap
 from matplotlib.colors import ListedColormap
 import cmasher as cmr
@@ -1077,6 +1081,33 @@ Frontogenesis500 = svariable(
     windbarbs=1,
     interpvar="pressure",
     interpvalue=500,
+    scale="bounds",
+    bounds=[-16, -8, -4, -2, -1, -0.5, 0.5, 1, 2, 4, 8, 16],
+    colormap=ListedColormap(
+        [
+            "midnightblue",
+            "darkblue",
+            "blue",
+            "deepskyblue",
+            "cyan",
+            "white",
+            "yellow",
+            "darkorange",
+            "red",
+            "firebrick",
+            "darkred",
+        ]
+    ),
+    range_min=-8,
+    range_max=8,
+)
+Frontogenesis = svariable(
+    dim=4,
+    ptitle="Petterssen Frontogenesis [K/(100km 3h)]",
+    outfile="Frontogenesis",
+    overlap_sv="PotentialTemp",
+    overlap_gap=1,
+    overlap_cmap=get_cmap("coolwarm"),
     scale="bounds",
     bounds=[-16, -8, -4, -2, -1, -0.5, 0.5, 1, 2, 4, 8, 16],
     colormap=ListedColormap(

@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2026 University of Manchester
+#
+# SPDX-License-Identifier: apache-2.0
+
 from wrf import to_np, getvar, g_geoht, interplevel, destagger
 import numpy as np
 

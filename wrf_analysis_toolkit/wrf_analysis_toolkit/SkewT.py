@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2026 University of Manchester
+#
+# SPDX-License-Identifier: apache-2.0
+
 import metpy as mp
 from metpy.units import units
 from metpy.plots import SkewT

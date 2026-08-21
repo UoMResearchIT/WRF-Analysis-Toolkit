@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2026 University of Manchester
+#
+# SPDX-License-Identifier: apache-2.0
+
 # This script runs main in a cli and generates a single pdf with one frame for each diagnostic variable.
 # It is meant to generate sample outputs, for a human to check.
 # Run this script with:

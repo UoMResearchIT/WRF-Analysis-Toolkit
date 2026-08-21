@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2026 University of Manchester
+#
+# SPDX-License-Identifier: apache-2.0
+
 [build-system]
 requires = ["setuptools>=82"]
 build-backend = "setuptools.build_meta"

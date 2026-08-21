@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2026 University of Manchester
+#
+# SPDX-License-Identifier: apache-2.0
+
 # This script calls the wrf_analysis_toolkit as a library, which must be previously installed from the base directory with `pip install .`.
 # It is meant to replicate tests/human_checks/test.py, so it generate sample outputs, for a human to check.
 # Run this script with:
