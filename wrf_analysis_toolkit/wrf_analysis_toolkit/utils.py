@@ -6,7 +6,9 @@ import os
 import re
 from copy import deepcopy
 from datetime import datetime, timedelta
-from wrf import CoordPair, ll_to_xy
+from wrf import CoordPair, ll_to_xy, destagger
+import numpy as np
+from xarray import Dataset, DataArray
 
 import wrf_analysis_toolkit.SensibleVariables as sv
 
@@ -200,3 +202,65 @@ def latlon_check(ncfile: Dataset, latlon: tuple):
         raise ValueError(
             f"Point ({lat}, {lon}) is outside the WRF domain"
         )
+
+def destagger_var(
+    var: DataArray,
+    meta_var: DataArray | None=None,
+    meta: bool=False
+):
+    stagger_dim = None
+    for i, dim in enumerate(var.dims):
+        if dim.endswith("_stag"):
+            stagger_dim = i
+            break
+
+    # Destagger the variable if it is staggered
+    if stagger_dim:
+        try:
+            var_out = destagger(var, stagger_dim, meta=meta)
+            if meta:
+                if meta_var is None:
+                    raise ValueError("Need a sample meta_var to attatch coordinate fields to destaggared array")
+                # Manually assign coordinates from meta_var because these aren't done automatically
+                var_out = var_out.assign_coords(coords=meta_var.coords)
+                var_out.attrs.update(stagger=meta_var.attrs['stagger'], coordinates=meta_var.attrs['coordinates'])
+                meta_var["Time"] = meta_var.Time
+        except:
+            raise ValueError("Unable to destagger variable")
+
+    # Otherwise return the original variable unchanged
+    else:
+        return var
+
+def project_vector(
+    var_u: np.ndarray,
+    var_v: np.ndarray,
+    wind_u: np.ndarray,
+    wind_v: np.ndarray,
+    wind_spd = None,
+):
+    """
+    Function to project a given vector (with terms in the X and Y directions)
+    onto the unit vectors of wind in the X and Y directions (U and V),
+    in order to calculate the along-flow values of the vector
+
+    Inputs:
+    - var_u: values of variable of in interest in the x direction, must be destaggered
+    - var_v: values of variable of in interest in the y direction, must be destaggered
+    - wind_u: values of wind speed in the x direction, must be destaggered
+    - wind_v: values of wind speed in the y direction, must be destaggered
+    - wind_spd: (optional) magnitude of wind spped, will be calculated from vectors if not given
+    """
+    if any([
+        var_u.shape() != var_v.shape(),
+        var_u.shape() != wind_u.shape(),
+        var_u.shape() != wind_v.shape()
+    ]):
+        raise ValueError("project_vector: Shape of vectors do not match, do they need destaggering?")
+
+    if wind_spd is None:
+        wind_mag = np.sqrt(np.square(wind_u) + np.square(wind_v))
+    else:
+        wind_mag = wind_spd
+
+    return (var_u*wind_u + var_v*wind_v) / wind_mag

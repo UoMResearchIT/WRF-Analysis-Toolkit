@@ -4,10 +4,23 @@
 
 from wrf import to_np, getvar, g_geoht, interplevel, destagger
 import numpy as np
+from copy import deepcopy
 
 import wrf_analysis_toolkit.SensibleVariables as sv
 import wrf_analysis_toolkit.Frontogenesis as Frontogenesis
 
+from wrf_analysis_toolkit.utils import destagger_var, project_vector
+
+MOMENTUM_TEND_DICT = {
+    "tend_hadv": {"var_u": "ru_tend_hadv", "var_v": "rv_tend_hadv"},
+    "tend_vadv": {"var_u": "ru_tend_vadv", "var_v": "ru_tend_vadv"},
+    "tend_pgf": {"var_u": "ru_tend_pgf", "var_v": "rv_tend_pgf"},
+    "tend_cor": {"var_u": "ru_tend_cor", "var_v": "rv_tend_cor"},
+    "tend_curv": {"var_u": "ru_tend_curv", "var_v": "rv_tend_curv"},
+    "tendf_pbl": {"var_u": "ru_tendf_pbl", "var_v": "rv_tendf_pbl"},
+    "tendf_cu": {"var_u": "ru_tendf_cu", "var_v": "rv_tendf_cu"},
+    "tendf_diff": {"var_u": "ru_tendf_diff", "var_v": "rv_tendf_diff"}
+}
 
 def GetSensVar(ncfile, svariable, windbarbs=0, time=0, varprevv=None):
     u = v = varv = None
@@ -45,23 +58,33 @@ def GetSensVar(ncfile, svariable, windbarbs=0, time=0, varprevv=None):
             F3D = Frontogenesis.frontogenesis3D(ncfile, time)
             d4var = getvar(ncfile, svariable.interpvar, timeidx=time)
             d4var.values = F3D
+        elif any(k in svariable.outfile for k in MOMENTUM_TEND_DICT):
+            for k in MOMENTUM_TEND_DICT:
+                if k in svariable.outfile:
+                    tend_name = k
+                    break
+            print(f"Extracting variables to calculate {tend_name}")
+            var_u = getvar(ncfile, MOMENTUM_TEND_DICT[tend_name]["var_u"], timeidx=time)
+            var_u = destagger_var(var_u, meta=False)
+            var_v = getvar(ncfile, MOMENTUM_TEND_DICT[tend_name]["var_v"], timeidx=time)
+            var_v = destagger_var(var_v, meta=False)
+            wind_u = getvar(ncfile, "u", timeidx=time)
+            wind_u = destagger_var(wind_u, meta=False)
+            wind_v = getvar(ncfile, "v", timeidx=time)
+            wind_v = destagger_var(wind_v, meta=False)
+            wind_spd = getvar(ncfile, "wspd", timeidx=time)
+
+            # Calculate the variable projected onto the unit vector of
+            # horizontal winds, to calculate the along-flow values
+            # This is quickest if calculated using arrays without metadata,
+            # and the metadata are copied from the interpvar afterwards
+            d4var = deepcopy(interpvar)
+            print(f"Projecting {tend_name} onto unit wind vector")
+            d4var.values = project_vector(var_u, var_v, wind_u, wind_v, wind_spd)
+            d4var.attrs.update(units=var_u.units)
 
         # Destagger the variable if it is staggered
-        stagger_dim = None
-        for i, dim in enumerate(d4var.dims):
-            if dim.endswith("_stag"):
-                stagger_dim = i
-                print(f"Destaggering {svariable.outfile} along dim {i}")
-                break
-        if stagger_dim:
-            try:
-                d4var = destagger(d4var, stagger_dim, meta=True)
-                # Manually assign coordinates from interpvar because these aren't done automatically
-                d4var = d4var.assign_coords(coords=interpvar.coords)
-                d4var.attrs.update(stagger=interpvar.attrs['stagger'], coordinates=interpvar.attrs['coordinates'])
-                d4var["Time"] = interpvar.Time
-            except:
-                raise ValueError(f"Unable to destagger {svariable.outfile}")
+        d4var = destagger_var(d4var, meta_var=interpvar, meta=True)
 
         # interpolate variable
         var = interplevel(d4var, interpvar, svariable.interpvalue)
