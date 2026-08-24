@@ -58,7 +58,7 @@ def GetSensVar(ncfile, svariable, windbarbs=0, time=0, varprevv=None):
             F3D = Frontogenesis.frontogenesis3D(ncfile, time)
             d4var = getvar(ncfile, svariable.interpvar, timeidx=time)
             d4var.values = F3D
-        elif any(k in svariable.outfile.lower() for k in MOMENTUM_TEND_DICT):
+        elif any([k in svariable.outfile.lower() for k in MOMENTUM_TEND_DICT]):
             for k in MOMENTUM_TEND_DICT:
                 if k in svariable.outfile.lower():
                     tend_name = k
@@ -68,11 +68,9 @@ def GetSensVar(ncfile, svariable, windbarbs=0, time=0, varprevv=None):
             var_u = destagger_var(var_u, meta=False)
             var_v = getvar(ncfile, MOMENTUM_TEND_DICT[tend_name]["var_v"], timeidx=time)
             var_v = destagger_var(var_v, meta=False)
-            wind_u = getvar(ncfile, "u", timeidx=time)
-            wind_u = destagger_var(wind_u, meta=False)
-            wind_v = getvar(ncfile, "v", timeidx=time)
-            wind_v = destagger_var(wind_v, meta=False)
-            wind_spd = getvar(ncfile, "wspd", timeidx=time)
+            ua = getvar(ncfile, "ua", timeidx=time)
+            va = getvar(ncfile, "va", timeidx=time)
+            wspd = getvar(ncfile, "wspd", timeidx=time)
 
             # Calculate the variable projected onto the unit vector of
             # horizontal winds, to calculate the along-flow values
@@ -80,14 +78,21 @@ def GetSensVar(ncfile, svariable, windbarbs=0, time=0, varprevv=None):
             # and the metadata are copied from the interpvar afterwards
             d4var = deepcopy(interpvar)
             print(f"Projecting {tend_name} onto unit wind vector")
-            d4var.values = project_vector(var_u, var_v, wind_u, wind_v, wind_spd)
+            d4var.values = project_vector(var_u, var_v, ua, va, wspd)
             d4var.attrs.update(units=var_u.units)
+
+        else:
+            if svariable.wrfname is not None:
+                raise ValueError(f"Failed to extract variable {svariable.wrfname}")
+            else:
+                raise ValueError(f"Failed to extract variable for {svariable.outname}")
 
         # Destagger the variable if it is staggered
         d4var = destagger_var(d4var, meta_var=interpvar, meta=True)
 
         # interpolate variable
         var = interplevel(d4var, interpvar, svariable.interpvalue)
+
         # Special variable computation
         if "AirTempDif6h" in svariable.outfile:
             # Temperature difference in 6h
@@ -101,6 +106,7 @@ def GetSensVar(ncfile, svariable, windbarbs=0, time=0, varprevv=None):
                 else:
                     varv = np.append(varprevv[1:], [var.values], axis=0)
                     var.values = var.values - varprevv[0]
+
         elif "AirTempDif12h" in svariable.outfile:
             # Temperature difference in 12h
             if varprevv is None:
@@ -124,6 +130,7 @@ def GetSensVar(ncfile, svariable, windbarbs=0, time=0, varprevv=None):
         elif svariable.outfile in ["InstRain"]:
             # InstRain (R) from SimRadarReflectivity1km (dBZ) using Marshall-Palmer: Z = 10^(dBZ/10) = 200*R^1.6
             var.values = (0.005 * 10 ** (0.1 * var.values)) ** (0.625)
+
         if windbarbs:
             # Get wind speed components at interpvalue
             ua = getvar(ncfile, "ua", timeidx=time)
