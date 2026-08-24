@@ -1609,22 +1609,22 @@ UMassTendency300 = create_UHorizAdvMomentum_at(300) #, range_min=-10, range_max=
 #     "tendf_diff": {"var_u": "ru_tendf_diff", "var_v": "rv_tendf_diff"}
 # }
 tend_scale = "bounds"
-tend_bounds = [-100, -50, -20, -10, -5, 5, 10, 20, 50, 100]
+tend_bounds = [-200, -100, -50, -25, 25, 50, 100, 200]
 tend_colormap = ListedColormap(
     [
-        "darkgreen",
-        "forestgreen",
-        "limegreen",
-        "greenyellow",
-        "white",
-        "gold",
-        "darkorange",
-        "red",
         "darkred",
+        "red",
+        "darkorange",
+        "gold",
+        "white",
+        "greenyellow",
+        "limegreen",
+        "forestgreen",
+        "darkgreen",
     ]
 )
-tend_range_min=-100
-tend_range_max=100
+tend_range_min=-200
+tend_range_max=200
 
 def create_TendHADV_at(
     interpvalue,
