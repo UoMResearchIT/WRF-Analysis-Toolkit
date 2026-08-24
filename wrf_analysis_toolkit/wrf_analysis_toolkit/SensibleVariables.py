@@ -1608,9 +1608,9 @@ UMassTendency300 = create_UHorizAdvMomentum_at(300) #, range_min=-10, range_max=
 #     "tendf_cu": {"var_u": "ru_tendf_cu", "var_v": "rv_tendf_cu"},
 #     "tendf_diff": {"var_u": "ru_tendf_diff", "var_v": "rv_tendf_diff"}
 # }
-tend_scale="bounds",
-tend_bounds=[-100, -50, -20, -10, -5, 5, 10, 20, 50, 100]
-tend_colormap=ListedColormap(
+tend_scale = "bounds"
+tend_bounds = [-100, -50, -20, -10, -5, 5, 10, 20, 50, 100]
+tend_colormap = ListedColormap(
     [
         "darkgreen",
         "forestgreen",
@@ -1638,7 +1638,7 @@ def create_TendHADV_at(
     Calculates:
     (ru_tend_hadv * U + rv_tend_hadv * V) / |wind_spd|
 
-    GetSensVar works out how to calculate based on outname rather than wrfname
+    GetSensVar works out what to calculate based on outname rather than wrfname
     """
     return svariable(
         dim=4,

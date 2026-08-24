@@ -67,7 +67,6 @@ def GetSensVar(ncfile, svariable, windbarbs=0, time=0, varprevv=None):
             print(f"Extracting variables to calculate {tend_name}")
             var_u = getvar(ncfile, MOMENTUM_TEND_DICT[tend_name]["var_u"], timeidx=time)
             attrs = var_u.attrs
-            print(attrs)
             var_u = destagger_var(var_u, meta=False)
             var_v = getvar(ncfile, MOMENTUM_TEND_DICT[tend_name]["var_v"], timeidx=time)
             var_v = destagger_var(var_v, meta=False)
@@ -83,7 +82,7 @@ def GetSensVar(ncfile, svariable, windbarbs=0, time=0, varprevv=None):
             print(f"Projecting {tend_name} onto unit wind vector")
             d4var.values = project_vector(var_u, var_v, ua, va, wspd)
             d4var.attrs.update(attrs)
-            print(d4var)
+            print(d4var.attrs)
 
         else:
             if svariable.wrfname is not None:
