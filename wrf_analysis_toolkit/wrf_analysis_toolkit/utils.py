@@ -224,10 +224,13 @@ def destagger_var(
                 # Manually assign coordinates from meta_var because these aren't done automatically
                 var_out = var_out.assign_coords(coords=meta_var.coords)
                 var_out.attrs.update(stagger=meta_var.attrs['stagger'], coordinates=meta_var.attrs['coordinates'])
-                meta_var["Time"] = meta_var.Time
+                var_out["Time"] = meta_var.Time
+
+            return var_out
+                
         except:
             raise ValueError("Unable to destagger variable")
-
+    
     # Otherwise return the original variable unchanged
     else:
         return var
@@ -252,9 +255,9 @@ def project_vector(
     - wind_spd: (optional) magnitude of wind spped, will be calculated from vectors if not given
     """
     if any([
-        var_u.shape() != var_v.shape(),
-        var_u.shape() != wind_u.shape(),
-        var_u.shape() != wind_v.shape()
+        var_u.shape != var_v.shape,
+        var_u.shape != wind_u.shape,
+        var_u.shape != wind_v.shape
     ]):
         raise ValueError("project_vector: Shape of vectors do not match, do they need destaggering?")
 

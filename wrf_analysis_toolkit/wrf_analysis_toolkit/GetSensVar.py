@@ -12,14 +12,14 @@ import wrf_analysis_toolkit.Frontogenesis as Frontogenesis
 from wrf_analysis_toolkit.utils import destagger_var, project_vector
 
 MOMENTUM_TEND_DICT = {
-    "tend_hadv": {"var_u": "ru_tend_hadv", "var_v": "rv_tend_hadv"},
-    "tend_vadv": {"var_u": "ru_tend_vadv", "var_v": "ru_tend_vadv"},
-    "tend_pgf": {"var_u": "ru_tend_pgf", "var_v": "rv_tend_pgf"},
-    "tend_cor": {"var_u": "ru_tend_cor", "var_v": "rv_tend_cor"},
-    "tend_curv": {"var_u": "ru_tend_curv", "var_v": "rv_tend_curv"},
-    "tendf_pbl": {"var_u": "ru_tendf_pbl", "var_v": "rv_tendf_pbl"},
-    "tendf_cu": {"var_u": "ru_tendf_cu", "var_v": "rv_tendf_cu"},
-    "tendf_diff": {"var_u": "ru_tendf_diff", "var_v": "rv_tendf_diff"}
+    "tendhadv": {"var_u": "RU_TEND_HADV", "var_v": "RV_TEND_HADV"},
+    "tendvadv": {"var_u": "RU_TEND_VADV", "var_v": "RU_TEND_VADV"},
+    "tendpgf": {"var_u": "RU_TEND_PGF", "var_v": "RU_TEND_PGF"},
+    "tendcor": {"var_u": "RU_TEND_COR", "var_v": "RU_TEND_COR"},
+    "tendcurv": {"var_u": "RU_TEND_CURV", "var_v": "RU_TEND_CURV"},
+    "tendfpbl": {"var_u": "RU_TENDF_PBL", "var_v": "RU_TENDF_PBL"},
+    "tendfcu": {"var_u": "RU_TENDF_CU", "var_v": "RU_TENDF_CU"},
+    "tendfdiff": {"var_u": "RU_TENDF_DIFF", "var_v": "RU_TENDF_DIFF"}
 }
 
 def GetSensVar(ncfile, svariable, windbarbs=0, time=0, varprevv=None):
@@ -45,9 +45,10 @@ def GetSensVar(ncfile, svariable, windbarbs=0, time=0, varprevv=None):
             # Converts accumulated rain to "hourly" rain (given hourly time indices)
             if varprevv is not None:
                 var.values = var.values - varprevv
-
+    
     # For 3D +value variables, interpolated at interpvalue of interpvar
     elif svariable.dim == 4:
+
         interpvar = getvar(ncfile, svariable.interpvar, timeidx=time)
         if svariable.wrfname is not None:
             d4var = getvar(ncfile, svariable.wrfname, timeidx=time)
@@ -65,6 +66,8 @@ def GetSensVar(ncfile, svariable, windbarbs=0, time=0, varprevv=None):
                     break
             print(f"Extracting variables to calculate {tend_name}")
             var_u = getvar(ncfile, MOMENTUM_TEND_DICT[tend_name]["var_u"], timeidx=time)
+            attrs = var_u.attrs
+            print(attrs)
             var_u = destagger_var(var_u, meta=False)
             var_v = getvar(ncfile, MOMENTUM_TEND_DICT[tend_name]["var_v"], timeidx=time)
             var_v = destagger_var(var_v, meta=False)
@@ -79,7 +82,8 @@ def GetSensVar(ncfile, svariable, windbarbs=0, time=0, varprevv=None):
             d4var = deepcopy(interpvar)
             print(f"Projecting {tend_name} onto unit wind vector")
             d4var.values = project_vector(var_u, var_v, ua, va, wspd)
-            d4var.attrs.update(units=var_u.units)
+            d4var.attrs.update(attrs)
+            print(d4var)
 
         else:
             if svariable.wrfname is not None:
