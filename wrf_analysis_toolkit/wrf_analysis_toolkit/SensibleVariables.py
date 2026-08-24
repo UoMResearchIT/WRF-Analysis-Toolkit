@@ -1608,13 +1608,31 @@ UMassTendency300 = create_UHorizAdvMomentum_at(300) #, range_min=-10, range_max=
 #     "tendf_cu": {"var_u": "ru_tendf_cu", "var_v": "rv_tendf_cu"},
 #     "tendf_diff": {"var_u": "ru_tendf_diff", "var_v": "rv_tendf_diff"}
 # }
+tend_scale="bounds",
+tend_bounds=[-100, -50, -20, -10, -5, 5, 10, 20, 50, 100],
+tend_colormap=ListedColormap(
+    [
+        "darkgreen",
+        "forestgreen",
+        "limegreen",
+        "greenyellow",
+        "white",
+        "gold",
+        "darkorange",
+        "red",
+        "darkred",
+    ]
+),
+tend_range_min=-100,
+tend_range_max=100,
 
 def create_TendHADV_at(
     interpvalue,
-    range_min=mu_range_min,
-    range_max=mu_range_max,
-    nticks=mu_nticks,
-    nlevs=mu_nlevs
+    scale=tend_scale,
+    bounds=tend_bounds,
+    colormap=tend_colormap,
+    range_min=tend_range_min,
+    range_max=tend_range_max
 ):
     """
     Calculates:
@@ -1622,8 +1640,6 @@ def create_TendHADV_at(
 
     GetSensVar works out how to calculate based on outname rather than wrfname
     """
-    min_frac = 0.55 + min(0, (range_min / (range_max - range_min)))
-    max_frac = 0.55 + min(0.45, (range_max / (range_max - range_min)))
     return svariable(
         dim=4,
         wrfname=None,
@@ -1631,9 +1647,9 @@ def create_TendHADV_at(
         outfile=f"TendHADV{interpvalue}",
         interpvar="pressure",
         interpvalue=interpvalue,
-        colormap=cmr.get_sub_cmap("PuOr", min_frac, max_frac, N=nlevs),
-        nticks=nticks,
-        nlevs=nlevs,
+        scale=scale,
+        bounds=bounds,
+        colormap=colormap,
         range_min=range_min,
         range_max=range_max,
     )
