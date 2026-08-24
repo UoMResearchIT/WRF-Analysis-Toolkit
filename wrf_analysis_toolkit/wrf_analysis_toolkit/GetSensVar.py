@@ -85,7 +85,7 @@ def GetSensVar(ncfile, svariable, windbarbs=0, time=0, varprevv=None):
             if svariable.wrfname is not None:
                 raise ValueError(f"Failed to extract variable {svariable.wrfname}")
             else:
-                raise ValueError(f"Failed to extract variable for {svariable.outname}")
+                raise ValueError(f"Failed to extract variable for {svariable.outfile}")
 
         # Destagger the variable if it is staggered
         d4var = destagger_var(d4var, meta_var=interpvar, meta=True)
