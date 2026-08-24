@@ -1,5 +1,5 @@
 # SPDX-FileCopyrightText: 2026 University of Manchester
-#4
+#
 # SPDX-License-Identifier: apache-2.0
 
 from matplotlib.pyplot import get_cmap
