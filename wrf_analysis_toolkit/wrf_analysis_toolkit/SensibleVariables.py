@@ -1530,10 +1530,31 @@ SkewT_Gibraltar = svariable(
     range_max=40,
 )
 
+# QVapor
+def create_QVapor_at(interpvalue, range_min=0, range_max=0.01, nticks=11, nlevs=11):
+    return svariable(
+        dim=4,
+        wrfname="QVAPOR",
+        ptitle=f"Water Vapour Mixing Ratio at {interpvalue} hPa [kg kg-1]",
+        outfile=f"QVapor{interpvalue}",
+        interpvar="pressure",
+        interpvalue=interpvalue,
+        colormap=get_cmap("YlGnBu"),
+        nticks=nticks,
+        nlevs=nlevs,
+        range_min=range_min,
+        range_max=range_max,
+        windbarbs=True,
+    )
+QVapor925 = create_QVapor_at(925)
+QVapor850 = create_QVapor_at(850)
+QVapor700 = create_QVapor_at(700)
+QVapor500 = create_QVapor_at(500)
+QVapor300 = create_QVapor_at(300)
 
 # Sensible variables for analysing momentum tendency terms
-
-# Mass Tendency 2D
+# Raw variables, in x- or y-direction, not projected onto unit vector of wind
+# Mass Tendency 2D, U direction
 mu_range_min = -100
 mu_range_max = 100
 mu_max_frac = 0.55 + min(0.45, (pv_range_max / (pv_range_max - pv_range_min)))
@@ -1570,31 +1591,55 @@ def create_UHorizAdvMomentum_at(
         range_min=range_min,
         range_max=range_max,
     )
-
 UMassTendency925 = create_UHorizAdvMomentum_at(925) #, range_min=-5, range_max=5)
 UMassTendency850 = create_UHorizAdvMomentum_at(850) #, range_min=-5, range_max=5)
 UMassTendency700 = create_UHorizAdvMomentum_at(700) #, range_min=-5, range_max=5)
 UMassTendency500 = create_UHorizAdvMomentum_at(500) #, range_min=-5, range_max=5)
 UMassTendency300 = create_UHorizAdvMomentum_at(300) #, range_min=-10, range_max=10)
 
-# QVapor
-def create_QVapor_at(interpvalue, range_min=0, range_max=0.01, nticks=11, nlevs=11):
+# Combined terms projected onto unit vector of wind
+# MOMENTUM_TEND_DICT = {
+#     "tend_hadv": {"var_u": "ru_tend_hadv", "var_v": "rv_tend_hadv"},
+#     "tend_vadv": {"var_u": "ru_tend_vadv", "var_v": "ru_tend_vadv"},
+#     "tend_pgf": {"var_u": "ru_tend_pgf", "var_v": "rv_tend_pgf"},
+#     "tend_cor": {"var_u": "ru_tend_cor", "var_v": "rv_tend_cor"},
+#     "tend_curv": {"var_u": "ru_tend_curv", "var_v": "rv_tend_curv"},
+#     "tendf_pbl": {"var_u": "ru_tendf_pbl", "var_v": "rv_tendf_pbl"},
+#     "tendf_cu": {"var_u": "ru_tendf_cu", "var_v": "rv_tendf_cu"},
+#     "tendf_diff": {"var_u": "ru_tendf_diff", "var_v": "rv_tendf_diff"}
+# }
+
+def create_TendHADV_at(
+    interpvalue,
+    range_min=mu_range_min,
+    range_max=mu_range_max,
+    nticks=mu_nticks,
+    nlevs=mu_nlevs
+):
+    """
+    Calculates:
+    (ru_tend_hadv * U + rv_tend_hadv * V) / |wind_spd|
+
+    GetSensVar works out how to calculate based on outname rather than wrfname
+    """
+    min_frac = 0.55 + min(0, (range_min / (range_max - range_min)))
+    max_frac = 0.55 + min(0.45, (range_max / (range_max - range_min)))
     return svariable(
         dim=4,
-        wrfname="QVAPOR",
-        ptitle=f"Water Vapour Mixing Ratio at {interpvalue} hPa [kg kg-1]",
-        outfile=f"QVapor{interpvalue}",
+        wrfname=None,
+        ptitle=f"Horizontal advection of zonal coupled momentum term projected onto unit vector at {interpvalue} hPa [Pa m s-2]",
+        outfile=f"TendHADV{interpvalue}",
         interpvar="pressure",
         interpvalue=interpvalue,
-        colormap=get_cmap("YlGnBu"),
+        colormap=cmr.get_sub_cmap("PuOr", min_frac, max_frac, N=nlevs),
         nticks=nticks,
         nlevs=nlevs,
         range_min=range_min,
         range_max=range_max,
-        windbarbs=True,
     )
-QVapor925 = create_QVapor_at(925)
-QVapor850 = create_QVapor_at(850)
-QVapor700 = create_QVapor_at(700)
-QVapor500 = create_QVapor_at(500)
-QVapor300 = create_QVapor_at(300)
+TendHADV925 = create_TendHADV_at(925) #, range_min=-5, range_max=5)
+TendHADV850 = create_TendHADV_at(850) #, range_min=-5, range_max=5)
+TendHADV700 = create_TendHADV_at(700) #, range_min=-5, range_max=5)
+TendHADV500 = create_TendHADV_at(500) #, range_min=-5, range_max=5)
+TendHADV300 = create_TendHADV_at(300) #, range_min=-10, range_max=10)
+

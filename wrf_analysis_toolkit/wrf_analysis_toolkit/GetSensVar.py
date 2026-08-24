@@ -58,9 +58,9 @@ def GetSensVar(ncfile, svariable, windbarbs=0, time=0, varprevv=None):
             F3D = Frontogenesis.frontogenesis3D(ncfile, time)
             d4var = getvar(ncfile, svariable.interpvar, timeidx=time)
             d4var.values = F3D
-        elif any(k in svariable.outfile for k in MOMENTUM_TEND_DICT):
+        elif any(k in svariable.outfile.lower() for k in MOMENTUM_TEND_DICT):
             for k in MOMENTUM_TEND_DICT:
-                if k in svariable.outfile:
+                if k in svariable.outfile.lower():
                     tend_name = k
                     break
             print(f"Extracting variables to calculate {tend_name}")
