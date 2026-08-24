@@ -2,7 +2,7 @@
 #
 # SPDX-License-Identifier: apache-2.0
 
-from wrf import to_np, getvar, g_geoht, interplevel, destagger
+from wrf import to_np, getvar, g_geoht, interplevel
 import numpy as np
 from copy import deepcopy
 
@@ -82,7 +82,6 @@ def GetSensVar(ncfile, svariable, windbarbs=0, time=0, varprevv=None):
             print(f"Projecting {tend_name} onto unit wind vector")
             d4var.values = project_vector(var_u, var_v, ua, va, wspd)
             d4var.attrs.update(attrs)
-            print(d4var.attrs)
 
         else:
             if svariable.wrfname is not None:
