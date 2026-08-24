@@ -981,7 +981,6 @@ InstRain = svariable(
     range_max=128,
 )
 
-# Frontgenesis
 Frontogenesis925 = svariable(
     dim=4,
     ptitle="Petterssen Frontogenesis at 925 hPa [K/(100km 3h)]",
@@ -1257,6 +1256,29 @@ WindSpeed700 = create_WindSpeed_at(700)
 WindSpeed500 = create_WindSpeed_at(500)
 WindSpeed300 = create_WindSpeed_at(300, range_min=0, range_max=80)
 
+def create_U_at(interpvalue, range_min=0, range_max=60, nticks=12, nlevs=12):
+    return svariable(
+        dim=4,
+        wrfname="U",
+        ptitle=f"Wind Speed in West-East direction at {interpvalue} hPa [m/s]",
+        outfile=f"U{interpvalue}",
+        interpvar="pressure",
+        interpvalue=interpvalue,
+        colormap=get_cmap("YlGnBu"),
+        nticks=nticks,
+        nlevs=nlevs,
+        range_min=range_min,
+        range_max=range_max,
+        windbarbs=True,
+    )
+
+U925 = create_U_at(925)
+U850 = create_U_at(850)
+U700 = create_U_at(700)
+U500 = create_U_at(500)
+U300 = create_U_at(300, range_min=0, range_max=80)
+
+
 # Potential Vorticity
 pv_range_min = -10
 pv_range_max = 10
@@ -1507,3 +1529,333 @@ SkewT_Gibraltar = svariable(
     range_min=-60,
     range_max=40,
 )
+
+# QVapor
+def create_QVapor_at(interpvalue, range_min=0, range_max=0.01, nticks=11, nlevs=11):
+    return svariable(
+        dim=4,
+        wrfname="QVAPOR",
+        ptitle=f"Water Vapour Mixing Ratio at {interpvalue} hPa [kg kg-1]",
+        outfile=f"QVapor{interpvalue}",
+        interpvar="pressure",
+        interpvalue=interpvalue,
+        colormap=get_cmap("YlGnBu"),
+        nticks=nticks,
+        nlevs=nlevs,
+        range_min=range_min,
+        range_max=range_max,
+        windbarbs=True,
+    )
+QVapor925 = create_QVapor_at(925)
+QVapor850 = create_QVapor_at(850)
+QVapor700 = create_QVapor_at(700)
+QVapor500 = create_QVapor_at(500)
+QVapor300 = create_QVapor_at(300)
+
+# Sensible variables for analysing momentum tendency terms
+# Raw variables, in x- or y-direction, not projected onto unit vector of wind
+# Mass Tendency 2D, U direction
+mu_range_min = -100
+mu_range_max = 100
+mu_max_frac = 0.55 + min(0.45, (pv_range_max / (pv_range_max - pv_range_min)))
+mu_min_frac = 0.55 + min(0, (pv_range_min / (pv_range_max - pv_range_min)))
+mu_nticks = 21
+mu_nlevs = 21
+UHorizAdvMomentum = svariable(
+    dim=4,
+    wrfname="RU_TEND_HADV",
+    ptitle=f"Horizontal advection of zonal coupled momentum term in X [Pa m s-2]",
+    outfile=f"UHorizAdvMomentum",
+    colormap=get_cmap("YlGnBu"),
+)
+
+def create_UHorizAdvMomentum_at(
+    interpvalue,
+    range_min=mu_range_min,
+    range_max=mu_range_max,
+    nticks=mu_nticks,
+    nlevs=mu_nlevs
+):
+    min_frac = 0.55 + min(0, (range_min / (range_max - range_min)))
+    max_frac = 0.55 + min(0.45, (range_max / (range_max - range_min)))
+    return svariable(
+        dim=4,
+        wrfname="RU_TEND_HADV",
+        ptitle=f"Horizontal advection of zonal coupled momentum term in X at {interpvalue} hPa [Pa m s-2]",
+        outfile=f"UHorizAdvMomentum{interpvalue}",
+        interpvar="pressure",
+        interpvalue=interpvalue,
+        colormap=cmr.get_sub_cmap("PuOr", min_frac, max_frac, N=nlevs),
+        nticks=nticks,
+        nlevs=nlevs,
+        range_min=range_min,
+        range_max=range_max,
+    )
+UMassTendency925 = create_UHorizAdvMomentum_at(925) #, range_min=-5, range_max=5)
+UMassTendency850 = create_UHorizAdvMomentum_at(850) #, range_min=-5, range_max=5)
+UMassTendency700 = create_UHorizAdvMomentum_at(700) #, range_min=-5, range_max=5)
+UMassTendency500 = create_UHorizAdvMomentum_at(500) #, range_min=-5, range_max=5)
+UMassTendency300 = create_UHorizAdvMomentum_at(300) #, range_min=-10, range_max=10)
+
+# Combined terms projected onto unit vector of wind
+# MOMENTUM_TEND_DICT = {
+#     "tend_hadv": {"var_u": "ru_tend_hadv", "var_v": "rv_tend_hadv"},
+#     "tend_vadv": {"var_u": "ru_tend_vadv", "var_v": "ru_tend_vadv"},
+#     "tend_pgf": {"var_u": "ru_tend_pgf", "var_v": "rv_tend_pgf"},
+#     "tend_cor": {"var_u": "ru_tend_cor", "var_v": "rv_tend_cor"},
+#     "tend_curv": {"var_u": "ru_tend_curv", "var_v": "rv_tend_curv"},
+#     "tendf_pbl": {"var_u": "ru_tendf_pbl", "var_v": "rv_tendf_pbl"},
+#     "tendf_cu": {"var_u": "ru_tendf_cu", "var_v": "rv_tendf_cu"},
+#     "tendf_diff": {"var_u": "ru_tendf_diff", "var_v": "rv_tendf_diff"}
+# }
+tend_scale = "bounds"
+tend_bounds = [-400, -200, -100, -50, -25, 25, 50, 100, 200, 400]
+tend_colormap = ListedColormap(
+    [
+        "darkred",
+        "red",
+        "darkorange",
+        "gold",
+        "white",
+        "greenyellow",
+        "limegreen",
+        "forestgreen",
+        "darkgreen",
+    ]
+)
+tend_range_min=-400
+tend_range_max=400
+
+def create_TendHADV_at(
+    interpvalue,
+    scale=tend_scale,
+    bounds=tend_bounds,
+    colormap=tend_colormap,
+    range_min=tend_range_min,
+    range_max=tend_range_max
+):
+    """
+    Calculates:
+    (ru_tend_hadv * U + rv_tend_hadv * V) / |wind_spd|
+
+    GetSensVar works out what to calculate based on outname rather than wrfname
+    """
+    return svariable(
+        dim=4,
+        wrfname=None,
+        ptitle=f"Horizontal advection of zonal coupled momentum term projected onto unit vector at {interpvalue} hPa [Pa m s-2]",
+        outfile=f"TendHADV{interpvalue}",
+        interpvar="pressure",
+        interpvalue=interpvalue,
+        scale=scale,
+        bounds=bounds,
+        colormap=colormap,
+        range_min=range_min,
+        range_max=range_max,
+    )
+
+TendHADV925 = create_TendHADV_at(925) #, range_min=-5, range_max=5)
+TendHADV850 = create_TendHADV_at(850) #, range_min=-5, range_max=5)
+TendHADV700 = create_TendHADV_at(700) #, range_min=-5, range_max=5)
+TendHADV500 = create_TendHADV_at(500) #, range_min=-5, range_max=5)
+TendHADV300 = create_TendHADV_at(300) #, range_min=-10, range_max=10)
+
+
+
+def create_TendVADV_at(
+    interpvalue,
+    scale=tend_scale,
+    bounds=tend_bounds,
+    colormap=tend_colormap,
+    range_min=tend_range_min,
+    range_max=tend_range_max
+):
+    return svariable(
+        dim=4,
+        wrfname=None,
+        ptitle=f"Vertical advection of zonal coupled momentum term projected onto unit vector at {interpvalue} hPa [Pa m s-2]",
+        outfile=f"TendVADV{interpvalue}",
+        interpvar="pressure",
+        interpvalue=interpvalue,
+        scale=scale,
+        bounds=bounds,
+        colormap=colormap,
+        range_min=range_min,
+        range_max=range_max,
+    )
+
+TendVADV925 = create_TendVADV_at(925) #, range_min=-5, range_max=5)
+TendVADV850 = create_TendVADV_at(850) #, range_min=-5, range_max=5)
+TendVADV700 = create_TendVADV_at(700) #, range_min=-5, range_max=5)
+TendVADV500 = create_TendVADV_at(500) #, range_min=-5, range_max=5)
+TendVADV300 = create_TendVADV_at(300) #, range_min=-10, range_max=10)
+
+def create_TendPGF_at(
+    interpvalue,
+    scale=tend_scale,
+    bounds=tend_bounds,
+    colormap=tend_colormap,
+    range_min=tend_range_min,
+    range_max=tend_range_max
+):
+    return svariable(
+        dim=4,
+        wrfname=None,
+        ptitle=f"Pressure Gradient Force zonal coupled momentum term projected onto unit vector at {interpvalue} hPa [Pa m s-2]",
+        outfile=f"TendPGF{interpvalue}",
+        interpvar="pressure",
+        interpvalue=interpvalue,
+        scale=scale,
+        bounds=bounds,
+        colormap=colormap,
+        range_min=range_min,
+        range_max=range_max,
+    )
+
+TendPGF925 = create_TendPGF_at(925) #, range_min=-5, range_max=5)
+TendPGF850 = create_TendPGF_at(850) #, range_min=-5, range_max=5)
+TendPGF700 = create_TendPGF_at(700) #, range_min=-5, range_max=5)
+TendPGF500 = create_TendPGF_at(500) #, range_min=-5, range_max=5)
+TendPGF300 = create_TendPGF_at(300) #, range_min=-10, range_max=10)
+
+def create_TendCOR_at(
+    interpvalue,
+    scale=tend_scale,
+    bounds=tend_bounds,
+    colormap=tend_colormap,
+    range_min=tend_range_min,
+    range_max=tend_range_max
+):
+    return svariable(
+        dim=4,
+        wrfname=None,
+        ptitle=f"Coriolis zonal coupled momentum term projected onto unit vector at {interpvalue} hPa [Pa m s-2]",
+        outfile=f"TendCOR{interpvalue}",
+        interpvar="pressure",
+        interpvalue=interpvalue,
+        scale=scale,
+        bounds=bounds,
+        colormap=colormap,
+        range_min=range_min,
+        range_max=range_max,
+    )
+
+TendCOR925 = create_TendCOR_at(925) #, range_min=-5, range_max=5)
+TendCOR850 = create_TendCOR_at(850) #, range_min=-5, range_max=5)
+TendCOR700 = create_TendCOR_at(700) #, range_min=-5, range_max=5)
+TendCOR500 = create_TendCOR_at(500) #, range_min=-5, range_max=5)
+TendCOR300 = create_TendCOR_at(300) #, range_min=-10, range_max=10)
+
+def create_TendCURV_at(
+    interpvalue,
+    scale=tend_scale,
+    bounds=tend_bounds,
+    colormap=tend_colormap,
+    range_min=tend_range_min,
+    range_max=tend_range_max
+):
+    return svariable(
+        dim=4,
+        wrfname=None,
+        ptitle=f"Curvature zonal coupled momentum term projected onto unit vector at {interpvalue} hPa [Pa m s-2]",
+        outfile=f"TendCURV{interpvalue}",
+        interpvar="pressure",
+        interpvalue=interpvalue,
+        scale=scale,
+        bounds=bounds,
+        colormap=colormap,
+        range_min=range_min,
+        range_max=range_max,
+    )
+
+TendCURV925 = create_TendCURV_at(925) #, range_min=-5, range_max=5)
+TendCURV850 = create_TendCURV_at(850) #, range_min=-5, range_max=5)
+TendCURV700 = create_TendCURV_at(700) #, range_min=-5, range_max=5)
+TendCURV500 = create_TendCURV_at(500) #, range_min=-5, range_max=5)
+TendCURV300 = create_TendCURV_at(300) #, range_min=-10, range_max=10)
+
+
+def create_TendfPBL_at(
+    interpvalue,
+    scale=tend_scale,
+    bounds=tend_bounds,
+    colormap=tend_colormap,
+    range_min=tend_range_min,
+    range_max=tend_range_max
+):
+    return svariable(
+        dim=4,
+        wrfname=None,
+        ptitle=f"PBL coupled momentum term projected onto unit vector at {interpvalue} hPa [Pa m s-2]",
+        outfile=f"TendfPBL{interpvalue}",
+        interpvar="pressure",
+        interpvalue=interpvalue,
+        scale=scale,
+        bounds=bounds,
+        colormap=colormap,
+        range_min=range_min,
+        range_max=range_max,
+    )
+
+TendfPBL925 = create_TendfPBL_at(925) #, range_min=-5, range_max=5)
+TendfPBL850 = create_TendfPBL_at(850) #, range_min=-5, range_max=5)
+TendfPBL700 = create_TendfPBL_at(700) #, range_min=-5, range_max=5)
+TendfPBL500 = create_TendfPBL_at(500) #, range_min=-5, range_max=5)
+TendfPBL300 = create_TendfPBL_at(300) #, range_min=-10, range_max=10)
+
+def create_TendfCU_at(
+    interpvalue,
+    scale=tend_scale,
+    bounds=tend_bounds,
+    colormap=tend_colormap,
+    range_min=tend_range_min,
+    range_max=tend_range_max
+):
+    return svariable(
+        dim=4,
+        wrfname=None,
+        ptitle=f"Microphysics coupled momentum term projected onto unit vector at {interpvalue} hPa [Pa m s-2]",
+        outfile=f"TendfCU{interpvalue}",
+        interpvar="pressure",
+        interpvalue=interpvalue,
+        scale=scale,
+        bounds=bounds,
+        colormap=colormap,
+        range_min=range_min,
+        range_max=range_max,
+    )
+
+TendfCU925 = create_TendfCU_at(925) #, range_min=-5, range_max=5)
+TendfCU850 = create_TendfCU_at(850) #, range_min=-5, range_max=5)
+TendfCU700 = create_TendfCU_at(700) #, range_min=-5, range_max=5)
+TendfCU500 = create_TendfCU_at(500) #, range_min=-5, range_max=5)
+TendfCU300 = create_TendfCU_at(300) #, range_min=-10, range_max=10)
+
+def create_TendfDIFF_at(
+    interpvalue,
+    scale=tend_scale,
+    bounds=tend_bounds,
+    colormap=tend_colormap,
+    range_min=tend_range_min,
+    range_max=tend_range_max
+):
+    return svariable(
+        dim=4,
+        wrfname=None,
+        ptitle=f"Diffusion coupled momentum term projected onto unit vector at {interpvalue} hPa [Pa m s-2]",
+        outfile=f"TendfDIFF{interpvalue}",
+        interpvar="pressure",
+        interpvalue=interpvalue,
+        scale=scale,
+        bounds=bounds,
+        colormap=colormap,
+        range_min=range_min,
+        range_max=range_max,
+    )
+
+TendfDIFF925 = create_TendfDIFF_at(925) #, range_min=-5, range_max=5)
+TendfDIFF850 = create_TendfDIFF_at(850) #, range_min=-5, range_max=5)
+TendfDIFF700 = create_TendfDIFF_at(700) #, range_min=-5, range_max=5)
+TendfDIFF500 = create_TendfDIFF_at(500) #, range_min=-5, range_max=5)
+TendfDIFF300 = create_TendfDIFF_at(300) #, range_min=-10, range_max=10)
+
