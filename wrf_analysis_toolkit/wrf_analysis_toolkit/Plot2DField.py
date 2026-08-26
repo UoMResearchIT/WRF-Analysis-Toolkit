@@ -172,7 +172,14 @@ def Plot2DField(
 
     # Overlap empty contours
     if overlap is not None:
-        z = to_np(overlap)
+        # Smooth the overlap variable
+        if smooth:
+            smooth_overlap = smooth2d(overlap, 3, cenweight=4)
+        else:
+            smooth_overlap = overlap
+
+        z = to_np(smooth_overlap)
+
         min_z = np.nanmin(z)
         max_z = np.nanmax(z)
         gap = svariable.overlap_gap
