@@ -11,4 +11,4 @@ jobs:
     permissions:
       pull-requests: write
       contents: write
-    uses: UoMResearchIT/actions/.github/workflows/apply-reuse.yml@main
+    uses: UoMResearchIT/actions/.github/workflows/apply-reuse.yml@849a4197afdfd994d2fdf4340438fa6e1f4dcbeb
